@@ -93,17 +93,29 @@ public class Main {
         }
 
         //bnb();
-        //stupide();
+        stupide();
         //groupes();
     }
 
+    // pas de groupes, pas de sous traitance, un max de tournées
     public static void stupide() {
-        System.out.println(0 + " f");
-        System.out.println("???");
+        System.out.println("x " + 0 + " f");
+
+        int tournees = 0;
+        for (Sommet f: fournisseurs) {
+            if (f.isFournisseur()) {
+                for (int d = 0; d < H; d++) {
+                    tournees += (f.getQuantity(d) + Q - 1) / Q;
+                }
+            }
+        }
+        System.out.println("y " + tournees);
+
         System.out.println("z " + F);
         for (int i = 0; i < F; i++){
             System.out.println("C " + i + " n " + 1 + " f " + i);
         }
+
         System.out.println("");
     }
 
