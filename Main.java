@@ -270,7 +270,7 @@ public class Main {
     		for (int j=0;j<(f.voisins).length;j++) {
     			if (i!=j) {
     				arretes[i][0] = f.voisins[j];
-    				arretes[i][1] = f.getIndex();
+    				arretes[i][1] = f.index;
     				arretes[i][j] = j;
     				i++;
     			}
