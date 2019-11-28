@@ -92,8 +92,9 @@ public class Main {
                 .voisins[Integer.parseInt(line[2])] = Integer.parseInt(line[4]);
         }
 
-        bnb();
+        //bnb();
         //stupide();
+        //groupes();
     }
 
     public static void stupide() {
@@ -105,10 +106,6 @@ public class Main {
         }
         System.out.println("");
     }
-
-
-
-
 
 
 
@@ -247,5 +244,20 @@ public class Main {
         curr_path[0] = 0;
 
         TSPRec(curr_bound, 0, 1, curr_path);
+    }
+
+
+    /**
+        PIERRE
+    **/
+
+    public static void groupes() {
+    	Sommet[][] arretes = new Sommet[3][1763];
+    	int i = 0;
+    	for (Sommet f:fournisseurs) {
+    		for (int j=0;j<(f.voisins).length;j++) {
+
+    		}
+		}
     }
 }
