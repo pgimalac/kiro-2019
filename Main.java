@@ -11,6 +11,7 @@ public class Main {
         public final double gps1;
         public final double gps2;
         public final int[] voisins;
+        public boolean soustraite=false;
 
         public Sommet(int index, double gps1, double gps2) {
             this.index = index;
@@ -95,6 +96,41 @@ public class Main {
         //bnb();
         stupide();
         //groupes();
+
+
+        int[] association = groupes();
+        ArrayList<Integer>[] mesGroupes = new ArrayList<>()[100];
+
+        for (int l=0;l<association.length;l++){
+            if(mesGroupes[association[i]]==null){
+                mesGroupes[association[i]] = new ArrayList<>();
+            }
+            mesGroupes[association[i]].add(i);
+        }
+
+        for (ArrayList<Integer> groupe : mesGroupes) {
+            if(groupe!=null){
+                boolean soustraite=false;
+
+
+                int result = bnb(matrice_adjacence);
+                int coutfixe = 0
+                for (int i =0;i<groupe.length;i++){
+                    coutfixe+=fournisseurs[groupe.get(i)].getCout();
+                }
+                if (result >= coutfixe){
+                    soustraite=true;
+                }
+
+            }
+        }
+
+
+
+
+
+
+
     }
 
     // pas de groupes, pas de sous traitance, un max de tournées
@@ -116,7 +152,19 @@ public class Main {
             System.out.println("C " + i + " n " + 1 + " f " + i);
         }
 
-        System.out.println("");
+        int id = 0;
+        for (Sommet f: fournisseurs) {
+            if (f.isFournisseur()) {
+                for (int d = 0; d < H; d++) {
+                    int nb = f.getQuantity(d);
+                    while (nb > 0) {
+                        System.out.println("P " + id + " g " + f.index + " s " + d + " n 1 f " + f.index + " " + Math.min(nb, Q));
+                       nb -= Q;
+                       id ++;
+                    }
+                }
+            }
+        }
     }
 
 
@@ -144,6 +192,11 @@ public class Main {
         }
 
         TSP();
+
+        int somme = 0;
+        for (int i=0;i<final_path.length-1;i++){
+            somme+= Main.fournisseurs[final_path[i]].voisins[final_path[i+1]]
+        }
     }
 
     public static void copyToFinal(int[] curr_path) {
@@ -263,7 +316,7 @@ public class Main {
         PIERRE
     **/
 
-      public static void groupes() {
+      public static int[] groupes() {
     	int[][] arretes = new int[3][1763]; // (poids,index,index)
     	int i = 0;
     	for (Sommet f:fournisseurs) {
@@ -278,7 +331,7 @@ public class Main {
     		}
     	Arrays.sort(arretes, Comparator.comparingInt(arr -> arr[0]));
     	int[] connexe = new int[F+2]; //destiné a contenir les groupes
-    	for (int k=0;k<F+2;k++) {
+    	for (int k=0;k<F;k++) {
     		connexe[k] = k;
     	}
     	boolean test = true;
@@ -287,19 +340,19 @@ public class Main {
 		int f2;
 		i=0;
 		int count = 0;
-    	while(count<10) { //10 CHOISI ARBITRAIREMENT
+    	while(count<4) { //10 CHOISI ARBITRAIREMENT            4!!!!!!!!!
     		f1 = arretes[i][1];
     		f2 = arretes[i][2];
     		int t = connexe[f2];
-    		for (int j=0;j<F+2;j++) {
+    		for (int j=0;j<F;j++) {
     			if (connexe[j]==t)connexe[j]=connexe[f1];
     		}
-    		for (int j=0;j<F+2;j++) {
+    		for (int j=0;j<F;j++) {
     			if (connexe[j]==connexe[f1])count++;
     		}
     		i++;
     		}
     	
-
+        return connexe;
     }
 }
