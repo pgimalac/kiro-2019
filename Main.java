@@ -152,6 +152,25 @@ public class Main {
             }
         }
 
+        int[] groupes = groupes();
+        int nbgroupes = 0;
+        for (int i = 0; i < F; i++) {
+            if (!fournisseurs[i].soustraite) {
+                fournisseurs[i].groupe = groupes[i];
+                nbgroupes = Math.max(nbgroupes, groupes[i]);
+            }
+        }
+        nbgroupes++;
+        ArrayList<LinkedList<Sommet>> grps = new ArrayList<LinkedList<Sommet>>(nbgroupes);
+        for(int i = 0; i < nbgroupes; i++) {
+            grps.add(new LinkedList<Sommet>());
+        }
+        for (Sommet s: fournisseurs) {
+            if (s.isFournisseur() && !s.soustraite) {
+                grps.get(s.groupe).add(s);
+            }
+        }
+
         // int ind = 0;
         // for (int i = 0; i < F; i++){
         //     if (!fournisseurs[i].soustraite && fournisseurs[i].groupe != -1) {
@@ -186,11 +205,13 @@ public class Main {
         }
         System.out.println("y " + tournees);
 
-        System.out.println("z " + ind);
-        for (int i = 0; i < F; i++){
-            if (!fournisseurs[i].soustraite){
-                System.out.println("C " + fournisseurs[i].groupe + " n " + 1 + " f " + i);
-            }
+        System.out.println("z " + nbgroupes);
+        for (int i = 0; i < nbgroupes; i++) {
+                System.out.print("C " + i + " n " + grps.get(i).size() + " f");
+                for (Sommet s: grps.get(i)) {
+                    System.out.print(" " + s.index);
+                }
+                System.out.println();
         }
 
         int id = 0;
@@ -461,51 +482,73 @@ public class Main {
         PIERRE
     **/
 
-      public static int[] groupes() {
-    	int[][] arretes = new int[3][1763]; // (poids,index,index)
+    public static int[] groupes() {
+    	int[][] arretes = new int[F*F][3]; // (poids,index,index)
     	int i = 0;
-    	for (Sommet f:fournisseurs) {
-    		for (int j=0;j<(f.voisins).length;j++) {
-    			if (i!=j) {
-    				arretes[i][0] = f.voisins[j];
-    				arretes[i][1] = f.index;
-    				arretes[i][j] = j;
+        System.out.println(F);
+    	for (int k = 0; k < F; k++) {
+    		for (int j=0;j< F;j++) {
+    			if (!fournisseurs[k].soustraite && !fournisseurs[j].soustraite && k != j) {
+    				arretes[i][0] = fournisseurs[k].voisins[j];
+    				arretes[i][1] = k;
+    				arretes[i][2] = j;
     				i++;
     			}
-    			}
-    		}
-    	Arrays.sort(arretes, Comparator.comparingInt(arr -> arr[0]));
-    	int[] connexe = new int[F+2]; //destiné a contenir les groupes
+            }
+        }
+        Arrays.sort(arretes, Comparator.comparingInt(arr -> arr[0]));
+    	int[] connexe = new int[F]; //destiné a contenir les groupes
+        HashSet<Integer> seen = new HashSet<Integer>();
     	for (int k=0;k<F;k++) {
+            if (!fournisseurs[k].soustraite) {
+                seen.add(k);
+            }
     		connexe[k] = k;
     	}
-		int f1;
-		int f2;
-		i=0;
-		int count = 0;
-		
-    	while(count<(F+3)/4) { //10 CHOISI ARBITRAIREMENT            4!!!!!!!!!
+        int f1;
+        int f2;
+        i=0;
+
+    	while(!seen.isEmpty()) { //10 CHOISI ARBITRAIREMENT            4!!!!!!!!!
     		f1 = arretes[i][1];
     		f2 = arretes[i][2];
     		int compteur1 =0;
     		int compteur2 = 0;
     		for (int j=0;j<F;j++) {
-    			if (connexe[j]==connexe[f1])compteur1++;
+                if (!fournisseurs[j].soustraite)
+        			if (connexe[j]==connexe[f1])compteur1++;
     		}
     		for (int j=0;j<F;j++) {
-    			if (connexe[j]==connexe[f2])compteur2++;
+                if (!fournisseurs[j].soustraite)
+        			if (connexe[j]==connexe[f2])compteur2++;
     		}
     		if (compteur1+compteur2<4) {
-    			count++;
     			int t = connexe[f2];
     			for (int j=0;j<F;j++) {
-    				if (connexe[j]==t)connexe[j]=connexe[f1];
-    		}
-    		}
+    				if (!fournisseurs[j].soustraite && connexe[j]==t) {
+                        connexe[j]=connexe[f1];
+                        seen.remove(f1);
+                        seen.remove(f2);
+                    }
+                }
+            }
 
-    		i++;
-    		}
+            i++;
+        }
 
-        return connexe;
-    }
+        HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+        int ind = 0;
+
+        for (i = 0; i < F; i++) {
+            if (fournisseurs[i].soustraite)
+                continue;
+            if (!map.containsKey(connexe[i])) {
+                map.put(connexe[i], ind);
+                ind++;
+            }
+            connexe[i] = map.get(connexe[i]);
+        }
+
+      return connexe;
+  }
 }
