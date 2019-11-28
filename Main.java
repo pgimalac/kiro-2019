@@ -97,7 +97,13 @@ public class Main {
     }
 
     public static void stupide() {
-
+        System.out.println(0 + " f");
+        System.out.println("???");
+        System.out.println("z " + F);
+        for (int i = 0; i < F; i++){
+            System.out.println("C " + i + " n " + 1 + " f " + i);
+        }
+        System.out.println("");
     }
     
     public static void groupes() {
