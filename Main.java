@@ -107,34 +107,6 @@ public class Main {
         stupide3();
         //groupes();
 
-
-        // int[] association = groupes();
-        // ArrayList<Integer>[] mesGroupes = new ArrayList<>()[100];
-
-        // for (int l=0;l<association.length;l++){
-        //     if(mesGroupes[association[i]]==null){
-        //         mesGroupes[association[i]] = new ArrayList<>();
-        //     }
-        //     mesGroupes[association[i]].add(i);
-        // }
-
-        // for (ArrayList<Integer> groupe : mesGroupes) {
-        //     if(groupe!=null){
-        //         boolean soustraite=false;
-
-
-        //         int result = bnb(matrice_adjacence);
-        //         int coutfixe = 0;
-        //         for (int i =0;i<groupe.length;i++){
-        //             coutfixe+=fournisseurs[groupe.get(i)].getCout();
-        //         }
-        //         if (result >= coutfixe){
-        //             soustraite=true;
-        //         }
-
-        //     }
-        // }
-
     }
 
     public static void stupide3() {
@@ -171,22 +143,6 @@ public class Main {
             }
         }
 
-        // int ind = 0;
-        // for (int i = 0; i < F; i++){
-        //     if (!fournisseurs[i].soustraite && fournisseurs[i].groupe != -1) {
-        //         fournisseurs[i].groupe = ind;
-        //         Sommet[] closest = new Sommet[3];
-        //         for (int j = i + 1; j < F; j++) {
-        //             if (!fournisseurs[j].soustraite && fournisseurs[j].groupe != -1){
-        //                 int dist = fournisseurs[i].voisins[j];
-        //                 if (closest[0] == null) {
-        //                     closest[0] = fournisseurs[j];
-        //                 } else if (closest)
-        //             }
-        //         }
-        //     }
-        // }
-
         System.out.print("x " + nb + " f");
         for (Sommet s: fournisseurs) {
             if (s.soustraite) {
@@ -194,16 +150,6 @@ public class Main {
             }
         }
         System.out.println();
-
-        int tournees = 0;
-        for (Sommet f: fournisseurs) {
-            if (f.isFournisseur() && !f.soustraite) {
-                for (int d = 0; d < H; d++) {
-                    tournees += (f.getQuantity(d) + Q - 1) / Q;
-                }
-            }
-        }
-        System.out.println("y " + tournees);
 
         System.out.println("z " + nbgroupes);
         for (int i = 0; i < nbgroupes; i++) {
@@ -221,15 +167,20 @@ public class Main {
                     nb = f.getQuantity(d);
                     while (nb > 0) {
                         if (nb >= Q) {
-                            System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 1 f " + f.index + " " + Math.min(nb, Q));
+                            System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 1 f " + f.index + " " + Q);
                         } else {
+                            boolean found = false;
                             for (int j = f.index + 1; j < F; j++) {
                                 if (fournisseurs[j].groupe == f.groupe && fournisseurs[j].getQuantity(d) > 0) {
                                     int qu = Math.min(Q - nb, fournisseurs[j].getQuantity(d));
                                     System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 2 f " + f.index + " " + nb + " f " + j + " " + qu);
                                     fournisseurs[j].remove(d, qu);
+                                    found = true;
                                     break;
                                 }
+                            }
+                            if (!found) {
+                                System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 1 f " + f.index + " " + nb);
                             }
                         }
                         nb -= Q;
@@ -485,7 +436,6 @@ public class Main {
     public static int[] groupes() {
     	int[][] arretes = new int[F*F][3]; // (poids,index,index)
     	int i = 0;
-        System.out.println(F);
     	for (int k = 0; k < F; k++) {
     		for (int j=0;j< F;j++) {
     			if (!fournisseurs[k].soustraite && !fournisseurs[j].soustraite && k != j) {
