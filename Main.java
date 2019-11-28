@@ -6,12 +6,46 @@ public class Main {
     static Iterator<String> lines =
         (new BufferedReader(new InputStreamReader(System.in))).lines().iterator();
 
+    static class Groupe {
+        ArrayList<Fournisseur> sesFournisseurs = new ArrayList<>();
+        public boolean is_soustraite=false;
+        public boolean best_path = new int[0];
+        public Groupe(){
+
+        }
+
+    }
+
+     static class Couplee (){
+        int[] final_path= new int[0];
+        int sommme=0;
+        public class Couplee(int[] final_path, int somme){
+            this.final_path=final_path;
+            this.somme=somme;
+
+        }
+    }
+
+    static class Couple (){
+        Fournisseur fournisseur;
+        int quantiteprise;
+
+        public Couple(Fournisseur fournisseur, int quantiteprise){
+            this.fournisseur=fournisseur;
+            this.quantiteprise=quantiteprise;
+        }
+    }
+
+    
+
     static class Sommet {
         public final int index;
         public final double gps1;
         public final double gps2;
         public final int[] voisins;
         public boolean soustraite=false;
+        public int groupe = 0;
+        //Tournée : semaine, identifiant, liste (fournisseur quantité)
 
         public Sommet(int index, double gps1, double gps2) {
             this.index = index;
@@ -66,6 +100,8 @@ public class Main {
     static Sommet[] fournisseurs;
 
     public static void main(String[] args) {
+        int nombre_de_groupe = 0;
+
         String[] first = lines.next().split(" ");
         Q = Integer.parseInt(first[1]);
         F = Integer.parseInt(first[3]);
@@ -99,39 +135,144 @@ public class Main {
 
 
         int[] association = groupes();
-        ArrayList<Integer>[] mesGroupes = new ArrayList<>()[100];
+        Groupe[] mesGroupes = new Groupe[100];
 
         for (int l=0;l<association.length;l++){
             if(mesGroupes[association[i]]==null){
-                mesGroupes[association[i]] = new ArrayList<>();
+                mesGroupes[association[i]] = new Groupe();
             }
-            mesGroupes[association[i]].add(i);
+            mesGroupes[association[i]].sesFournisseurs.add(i);
         }
 
-        for (ArrayList<Integer> groupe : mesGroupes) {
+        for (Groupe groupe : mesGroupes) {
             if(groupe!=null){
                 boolean soustraite=false;
+                nombre_de_groupe+=1;
+
+                int[][] matrice_adjacence = new int[groupe.sesSuccesseurs.length][groupe.sesSuccesseurs.length];
+
+                for(int k=0; k<groupe.sesSuccesseurs.length;k++){
+                    for(int u=0; u<groupe.sesSuccesseurs.length;u++){
+                        matrice_adjacence[u][k]=fournisseurs[u].voisins[k].getCout();
+                    }
+                }
 
 
-                int result = bnb(matrice_adjacence);
-                int coutfixe = 0
+                Couplee data = bnb(matrice_adjacence); //TODO : Remettre les int[][]
+                int result = data.somme;
+                int[] best_path = data.final_path; //TODO : Faire renvoyer le best path à bnb
+                groupe.best_path=best_path;
+                int coutfixe = 0;
                 for (int i =0;i<groupe.length;i++){
                     coutfixe+=fournisseurs[groupe.get(i)].getCout();
                 }
                 if (result >= coutfixe){
                     soustraite=true;
                 }
+                groupe.is_soustraite=soustraite;
+                for(int f : groupe.sesSuccesseurs ){
+                    fournisseurs[f].soustraite=soustraite;
+                }
 
+
+            }
+        }
+        String gens_sous_traite = ""
+        int compteur = 0 ;
+        for(Fournisseur f : fournisseurs){
+            if(f.soustraite){
+                gens_sous_traite += f.index + " "
+                compteur++;
+            }
+        
+        }
+
+        ArrayList<Fournisseur>() nonSousTraites = new ArrayList<>();
+
+        for(Fournisseur element : fournisseurs){
+            if (!element.soustraite) {
+                nonSousTraites.add(element);
+            }
+        }
+
+        ArrayList<Groupe>() groupe_non_sous_traite = new ArrayList<>();
+
+        for (Groupe groupe : mesGroupes) {
+            if(!groupe.is_soustraite){
+               groupe_non_sous_traite.add(groupe);
             }
         }
 
 
 
+        
+        int remplir = 0;
+        int avant = 0;
+        int apres = 0;
+
+        ArrayList<ArrayList<Couple>>[] trajet_par_semaine = new ArrayList<ArrayList<Couple>>[H];
+
+        ArrayList<ArrayList<Couple>> allTrajets = new ArrayList<>();
+
+        for (int s=0;s<trajet_par_semaine.length;s++){
+            allTrajets = new ArrayList<>();
+
+            for(Groupe groupe : groupe_non_sous_traite){
+                for(Fournisseur fournisseur : groupe.sesSuccesseurs){
+                    arecuperer+=fournisseur.getQuantity(s);
+                }
+                int curseur = 0;
+                current_fournisseur=groupe.sesSuccesseurs.get(curseur);
+                while (curseur<groupe.sesSuccesseurs.length){
+                    remplir=0;
+                    while (remplir<Q || curseur>=groupe.sesSuccesseurs.length){
+                        ArrayList<Couple> currentTrajet = new ArrayList<>();
+                        avant= current_fournisseur.getQuantity(s);
+                        while(current_fournisseur.getQuantity(s)>0){
+                            current_fournisseur.getQuantity(s)-=1;
+                            remplir+=1;
+                        }
+                        apres = current_fournisseur.getQuantity(s);
+                        if (apres-avant>0){
+                            currentTrajet.add(Couple(current_fournisseur,apres-avant))
+                        }
+                        curseur+=1;
+                        current_fournisseur=groupe.sesSuccesseurs.get(curseur);
+
+                    }
+                    allTrajets.add(currentTrajet);
+                   
+                }
 
 
+            }
+            trajet_par_semaine[s]=allTrajets;
+        }
 
+        System.out.println("x " + compteur + "f " + gens_sous_traite);
+        System.out.println("y " + nombre_de_tournees);
+        System.out.println("z " +  nombre_de_groupe);
 
-    }
+        String mesFournisseurs= "";
+
+        int nombre_de_tournees= 0;
+
+        for(int s= 0; s<H;s++){
+            nombre_de_tournees+=trajet_par_semaine[s].length;
+        }
+        for(int s= 0; s<H;s++){ //chaque semaine
+            for(int k=0; k<trajet_par_semaine[s].length;k++){ // dans chaque all trajet
+                for (int t=0; t<trajet_par_semaine[s].get(k).length;t++){ // dans chaque trajet
+                    mesFournisseurs="";
+                    for(int e=0; e<trajet_par_semaine[s].get(k).get(t).length;e++){ //dans chaque étape
+                        mesFournisseurs+="f " +trajet_par_semaine[s].get(k).get(t).get(e).fournisseur.index + " " + trajet_par_semaine[s].get(k).get(t).get(e).quantiteprise +" ";
+                    }
+                }
+
+            }
+        }
+
+     }
 
     // pas de groupes, pas de sous traitance, un max de tournées
     public static void stupide() {
@@ -168,8 +309,11 @@ public class Main {
     static boolean[] visited = new boolean[N+1];
 
 
+   
+
+
     //Branch and bound algorithm
-    public static void bnb() {
+    public static Couplee bnb(int[][] mat) {
         for(int i = 0; i<final_path.length; i++){
             final_path[i] = -1;
         }
@@ -179,12 +323,13 @@ public class Main {
             visited[i]=false;
         }
 
-        TSP();
+        TSP(mat);
 
         int somme = 0;
         for (int i=0;i<final_path.length-1;i++){
-            somme+= Main.fournisseurs[final_path[i]].voisins[final_path[i+1]]
+            somme+= math[final_path[i]][final_path[i+1]];
         }
+        return new Couplee(final_path,somme);
     }
 
     public static void copyToFinal(int[] curr_path) {
@@ -200,8 +345,8 @@ public class Main {
 
     public static int firstMin(int i) {
         int mini = INT_MAX ;
-        for(int k=0;k<N;k++){if (Main.fournisseurs[i].voisins[k]<mini && i != k) {
-                mini = Main.fournisseurs[i].voisins[k] ;
+        for(int k=0;k<N;k++){if (mat[i][k]<mini && i != k) {
+                mini = mat[i][k] ;
             }
         }
         return mini ;
@@ -217,23 +362,23 @@ public class Main {
                 continue ;
             }
 
-            if (Main.fournisseurs[i].voisins[j] <= first) {
+            if (mat[i][j] <= first) {
                 second = first ;
-                first = Main.fournisseurs[i].voisins[j] ;
+                first = mat[i][j] ;
             }
-            else if ((Main.fournisseurs[i].voisins[j] <= second) &&  (Main.fournisseurs[i].voisins[j] != first)) {
-                second = Main.fournisseurs[i].voisins[j];
+            else if ((mat[i][j] <= second) &&  (mat[i][j] != first)) {
+                second = mat[i][j];
             }
         }
         return second;
     }
 
-    public static void TSPRec(int curr_bound, int curr_weight, int level, int[] curr_path) {
+    public static void TSPRec(int[][] mat,int curr_bound, int curr_weight, int level, int[] curr_path) {
 
         if (level==N)  {
 
-            if (Main.fournisseurs[curr_path[level-1]].voisins[curr_path[0]] != 0)  {
-                int curr_res = curr_weight + Main.fournisseurs[curr_path[level-1]].voisins[curr_path[0]];
+            if (mat[curr_path[level-1]][curr_path[0]] != 0)  {
+                int curr_res = curr_weight + mat[curr_path[level-1]][curr_path[0]];
                 if (curr_res < final_res) {
                     copyToFinal(curr_path);
                     final_res = curr_res;
@@ -242,9 +387,9 @@ public class Main {
         }
 
         for (int i=0;i<N;i++) {
-            if (Main.fournisseurs[curr_path[level-1]].voisins[i] != 0 && !visited[i]) {
+            if (mat[curr_path[level-1]][i] != 0 && !visited[i]) {
                 int temp = curr_bound;
-                curr_weight += Main.fournisseurs[curr_path[level-1]].voisins[i];
+                curr_weight += mat[curr_path[level-1]][i];
 
                 if (level==1) {
                   curr_bound -= ((firstMin(curr_path[level-1]) + firstMin(i))/2);
@@ -257,10 +402,10 @@ public class Main {
                     curr_path[level] = i;
                     visited[i] = true;
 
-                    TSPRec(curr_bound, curr_weight, level+1,curr_path);
+                    TSPRec(mat,curr_bound, curr_weight, level+1,curr_path);
                 }
 
-                curr_weight -= Main.fournisseurs[curr_path[level-1]].voisins[i];
+                curr_weight -= mat[curr_path[level-1]][i];
                 curr_bound = temp;
 
                 for (int j=0;j<N+1;j++){
@@ -275,7 +420,7 @@ public class Main {
     }
 
 
-    public static void TSP()  {
+    public static void TSP(int[][] mat)  {
         int curr_bound= 0;
         int[] curr_path = new int[N+1];
         for(int i=0;i<curr_path.length;i++){
@@ -296,7 +441,7 @@ public class Main {
         Main.visited[0] = true ;
         curr_path[0] = 0;
 
-        TSPRec(curr_bound, 0, 1, curr_path);
+        TSPRec(mat,curr_bound, 0, 1, curr_path);
     }
 
 
