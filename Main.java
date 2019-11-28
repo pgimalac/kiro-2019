@@ -263,13 +263,43 @@ public class Main {
         PIERRE
     **/
 
-    public static void groupes() {
-    	Sommet[][] arretes = new Sommet[3][1763];
+      public static void groupes() {
+    	int[][] arretes = new int[3][1763]; // (poids,index,index)
     	int i = 0;
     	for (Sommet f:fournisseurs) {
     		for (int j=0;j<(f.voisins).length;j++) {
-
+    			if (i!=j) {
+    				arretes[i][0] = f.voisins[j];
+    				arretes[i][1] = f.getIndex();
+    				arretes[i][j] = j;
+    				i++;
+    			}
+    			}
     		}
-		}
+    	Arrays.sort(arretes, Comparator.comparingInt(arr -> arr[0]));
+    	int[] connexe = new int[F+2]; //destiné a contenir les groupes
+    	for (int k=0;k<F+2;k++) {
+    		connexe[k] = k;
+    	}
+    	boolean test = true;
+
+		int f1;
+		int f2;
+		i=0;
+		int count = 0;
+    	while(count<10) { //10 CHOISI ARBITRAIREMENT
+    		f1 = arretes[i][1];
+    		f2 = arretes[i][2];
+    		int t = connexe[f2];
+    		for (int j=0;j<F+2;j++) {
+    			if (connexe[j]==t)connexe[j]=connexe[f1];
+    		}
+    		for (int j=0;j<F+2;j++) {
+    			if (connexe[j]==connexe[f1])count++;
+    		}
+    		i++;
+    		}
+    	
+
     }
 }
