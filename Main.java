@@ -10,13 +10,14 @@ public class Main {
         public final int index;
         public final double gps1;
         public final double gps2;
-        public final HashMap<Integer, Integer> voisins = new HashMap<Integer, Integer>();
+        public final int[] voisins;
 
         public Sommet(int index, double gps1, double gps2) {
             this.index = index;
             this.gps1 = gps1;
             this.gps2 = gps2;
             Main.fournisseurs[index] = this;
+            voisins = new int[Main.F + 2];
         }
 
         public boolean isFournisseur() {
@@ -87,11 +88,15 @@ public class Main {
 
         while (lines.hasNext()) {
             String[] line = lines.next().split(" ");
-            fournisseurs[Integer.parseInt(line[1])].voisins.put(
-                Integer.parseInt(line[2]),
-                Integer.parseInt(line[4])
-            );
+            fournisseurs[Integer.parseInt(line[1])]
+                .voisins[Integer.parseInt(line[2])] = Integer.parseInt(line[4]);
         }
+
+        stupide();
+    }
+
+    public static void stupide() {
+
     }
 
 }
