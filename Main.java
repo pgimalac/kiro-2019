@@ -91,12 +91,22 @@ public class Main {
             fournisseurs[Integer.parseInt(line[1])]
                 .voisins[Integer.parseInt(line[2])] = Integer.parseInt(line[4]);
         }
-
+        
         stupide();
+        groupes();
     }
 
     public static void stupide() {
 
     }
-
+    
+    public static void groupes() {
+    	Sommet[][] arretes = new Sommet[3][1763];
+    	int i = 0;
+    	for (Sommet f:fournisseurs) {
+    		for (int j=0;j<(f.voisins).length;j++) {
+    			
+    		}
+    		}
+    }
 }
