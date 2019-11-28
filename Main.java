@@ -12,7 +12,7 @@ public class Main {
         public final double gps2;
         public final int[] voisins;
         public boolean soustraite = false;
-        public int groupe = 0;
+        public int groupe = -1;
 
         public Sommet(int index, double gps1, double gps2) {
             this.index = index;
@@ -31,6 +31,10 @@ public class Main {
         }
 
         public int getQuantity(int day) {
+            throw new RuntimeException();
+        }
+
+        public void remove(int d, int qu) {
             throw new RuntimeException();
         }
     }
@@ -60,6 +64,10 @@ public class Main {
 
         public int getQuantity(int day) {
             return dfs[day];
+        }
+
+        public void remove(int d, int qu) {
+            dfs[d] -= qu;
         }
     }
 
@@ -144,9 +152,21 @@ public class Main {
             }
         }
 
-        for (int i = 0; i < F; i++){
-
-        }
+        // int ind = 0;
+        // for (int i = 0; i < F; i++){
+        //     if (!fournisseurs[i].soustraite && fournisseurs[i].groupe != -1) {
+        //         fournisseurs[i].groupe = ind;
+        //         Sommet[] closest = new Sommet[3];
+        //         for (int j = i + 1; j < F; j++) {
+        //             if (!fournisseurs[j].soustraite && fournisseurs[j].groupe != -1){
+        //                 int dist = fournisseurs[i].voisins[j];
+        //                 if (closest[0] == null) {
+        //                     closest[0] = fournisseurs[j];
+        //                 } else if (closest)
+        //             }
+        //         }
+        //     }
+        // }
 
         System.out.print("x " + nb + " f");
         for (Sommet s: fournisseurs) {
@@ -179,9 +199,20 @@ public class Main {
                 for (int d = 0; d < H; d++) {
                     nb = f.getQuantity(d);
                     while (nb > 0) {
-                        System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 1 f " + f.index + " " + Math.min(nb, Q));
-                       nb -= Q;
-                       id ++;
+                        if (nb >= Q) {
+                            System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 1 f " + f.index + " " + Math.min(nb, Q));
+                        } else {
+                            for (int j = f.index + 1; j < F; j++) {
+                                if (fournisseurs[j].groupe == f.groupe && fournisseurs[j].getQuantity(d) > 0) {
+                                    int qu = Math.min(Q - nb, fournisseurs[j].getQuantity(d));
+                                    System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 2 f " + f.index + " " + nb + " f " + j + " " + qu);
+                                    fournisseurs[j].remove(d, qu);
+                                    break;
+                                }
+                            }
+                        }
+                        nb -= Q;
+                        id ++;
                     }
                 }
             }
