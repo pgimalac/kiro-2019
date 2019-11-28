@@ -522,7 +522,7 @@ public class Main {
                 if (!fournisseurs[j].soustraite)
         			if (connexe[j]==connexe[f2])compteur2++;
     		}
-    		if (compteur1+compteur2<4) {
+    		if (compteur1+compteur2 <= 4) {
     			int t = connexe[f2];
     			for (int j=0;j<F;j++) {
     				if (!fournisseurs[j].soustraite && connexe[j]==t) {
