@@ -334,22 +334,30 @@ public class Main {
     	for (int k=0;k<F;k++) {
     		connexe[k] = k;
     	}
-    	boolean test = true;
-
 		int f1;
 		int f2;
 		i=0;
 		int count = 0;
-    	while(count<4) { //10 CHOISI ARBITRAIREMENT            4!!!!!!!!!
+		
+    	while(count<(F+3)/4) { //10 CHOISI ARBITRAIREMENT            4!!!!!!!!!
     		f1 = arretes[i][1];
     		f2 = arretes[i][2];
-    		int t = connexe[f2];
+    		int compteur1 =0;
+    		int compteur2 = 0;
     		for (int j=0;j<F;j++) {
-    			if (connexe[j]==t)connexe[j]=connexe[f1];
+    			if (connexe[j]==connexe[f1])compteur1++;
     		}
     		for (int j=0;j<F;j++) {
-    			if (connexe[j]==connexe[f1])count++;
+    			if (connexe[j]==connexe[f2])compteur2++;
     		}
+    		if (compteur1+compteur2<4) {
+    			count++;
+    			int t = connexe[f2];
+    			for (int j=0;j<F;j++) {
+    				if (connexe[j]==t)connexe[j]=connexe[f1];
+    		}
+    		}
+
     		i++;
     		}
     	
