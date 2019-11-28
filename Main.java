@@ -9,24 +9,24 @@ public class Main {
     static class Groupe {
         ArrayList<Fournisseur> sesFournisseurs = new ArrayList<>();
         public boolean is_soustraite=false;
-        public boolean best_path = new int[0];
+        public int[] final_path = null;
         public Groupe(){
 
         }
 
     }
 
-     static class Couplee (){
+     static class Couplee {
         int[] final_path= new int[0];
-        int sommme=0;
-        public class Couplee(int[] final_path, int somme){
+        int somme=0;
+        public Couplee(int[] final_path, int somme){
             this.final_path=final_path;
             this.somme=somme;
 
         }
     }
 
-    static class Couple (){
+    static class Couple {
         Fournisseur fournisseur;
         int quantiteprise;
 
@@ -36,7 +36,7 @@ public class Main {
         }
     }
 
-    
+
 
     static class Sommet {
         public final int index;
@@ -66,6 +66,10 @@ public class Main {
         public int getQuantity(int day) {
             throw new RuntimeException();
         }
+
+        public void remove(int d, int qu) {
+            throw new RuntimeException();
+        }
     }
 
     static class Fournisseur extends Sommet {
@@ -93,6 +97,10 @@ public class Main {
 
         public int getQuantity(int day) {
             return dfs[day];
+        }
+
+        public void remove(int d, int qu) {
+            dfs[d] -= qu;
         }
     }
 
@@ -137,11 +145,11 @@ public class Main {
         int[] association = groupes();
         Groupe[] mesGroupes = new Groupe[100];
 
-        for (int l=0;l<association.length;l++){
-            if(mesGroupes[association[i]]==null){
-                mesGroupes[association[i]] = new Groupe();
+        for (int l=0;l<F;l++){
+            if(mesGroupes[association[l]]==null){
+                mesGroupes[association[l]] = new Groupe();
             }
-            mesGroupes[association[i]].sesFournisseurs.add(i);
+            mesGroupes[association[l]].sesFournisseurs.add((Fournisseur)fournisseurs[l]);
         }
 
         for (Groupe groupe : mesGroupes) {
@@ -149,11 +157,11 @@ public class Main {
                 boolean soustraite=false;
                 nombre_de_groupe+=1;
 
-                int[][] matrice_adjacence = new int[groupe.sesSuccesseurs.length][groupe.sesSuccesseurs.length];
+                int[][] matrice_adjacence = new int[groupe.sesFournisseurs.size()][groupe.sesFournisseurs.size()];
 
-                for(int k=0; k<groupe.sesSuccesseurs.length;k++){
-                    for(int u=0; u<groupe.sesSuccesseurs.length;u++){
-                        matrice_adjacence[u][k]=fournisseurs[u].voisins[k].getCout();
+                for(int k=0; k<groupe.sesFournisseurs.size();k++){
+                    for(int u=0; u<groupe.sesFournisseurs.size();u++){
+                        matrice_adjacence[u][k]=fournisseurs[u].voisins[k];
                     }
                 }
 
@@ -161,41 +169,41 @@ public class Main {
                 Couplee data = bnb(matrice_adjacence); //TODO : Remettre les int[][]
                 int result = data.somme;
                 int[] best_path = data.final_path; //TODO : Faire renvoyer le best path à bnb
-                groupe.best_path=best_path;
+                groupe.final_path=best_path;
                 int coutfixe = 0;
-                for (int i =0;i<groupe.length;i++){
-                    coutfixe+=fournisseurs[groupe.get(i)].getCout();
+                for (int i =0;i<groupe.sesFournisseurs.size();i++){
+                    coutfixe+=groupe.sesFournisseurs.get(i).getCout();
                 }
                 if (result >= coutfixe){
                     soustraite=true;
                 }
                 groupe.is_soustraite=soustraite;
-                for(int f : groupe.sesSuccesseurs ){
-                    fournisseurs[f].soustraite=soustraite;
+                for(Fournisseur f : groupe.sesFournisseurs ){
+                    f.soustraite=soustraite;
                 }
 
 
             }
         }
-        String gens_sous_traite = ""
+        String gens_sous_traite = "";
         int compteur = 0 ;
-        for(Fournisseur f : fournisseurs){
-            if(f.soustraite){
-                gens_sous_traite += f.index + " "
+        for(Sommet f : fournisseurs){
+            if(f.isFournisseur() && f.soustraite){
+                gens_sous_traite += f.index + " ";
                 compteur++;
             }
-        
+
         }
 
-        ArrayList<Fournisseur>() nonSousTraites = new ArrayList<>();
+        ArrayList<Fournisseur> nonSousTraites = new ArrayList<>();
 
-        for(Fournisseur element : fournisseurs){
-            if (!element.soustraite) {
-                nonSousTraites.add(element);
+        for(Sommet element : fournisseurs){
+            if (element.isFournisseur() && !element.soustraite) {
+                nonSousTraites.add((Fournisseur)element);
             }
         }
 
-        ArrayList<Groupe>() groupe_non_sous_traite = new ArrayList<>();
+        ArrayList<Groupe> groupe_non_sous_traite = new ArrayList<>();
 
         for (Groupe groupe : mesGroupes) {
             if(!groupe.is_soustraite){
@@ -205,74 +213,76 @@ public class Main {
 
 
 
-        
+
         int remplir = 0;
         int avant = 0;
         int apres = 0;
 
-        ArrayList<ArrayList<Couple>>[] trajet_par_semaine = new ArrayList<ArrayList<Couple>>[H];
+
+        Fournisseur current_fournisseur = null;
+        ArrayList<ArrayList<ArrayList<Couple>>> trajet_par_semaine = new ArrayList<ArrayList<ArrayList<Couple>>>(H);
+        for (int i = 0;i < H; i++){
+            trajet_par_semaine.add(new ArrayList<ArrayList<Couple>>());
+        }
 
         ArrayList<ArrayList<Couple>> allTrajets = new ArrayList<>();
 
-        for (int s=0;s<trajet_par_semaine.length;s++){
+        for (int s=0;s<trajet_par_semaine.size();s++){
             allTrajets = new ArrayList<>();
 
             for(Groupe groupe : groupe_non_sous_traite){
-                for(Fournisseur fournisseur : groupe.sesSuccesseurs){
-                    arecuperer+=fournisseur.getQuantity(s);
-                }
                 int curseur = 0;
-                current_fournisseur=groupe.sesSuccesseurs.get(curseur);
-                while (curseur<groupe.sesSuccesseurs.length){
+                current_fournisseur=groupe.sesFournisseurs.get(curseur);
+                while (curseur<groupe.sesFournisseurs.size()){
                     remplir=0;
-                    while (remplir<Q || curseur>=groupe.sesSuccesseurs.length){
-                        ArrayList<Couple> currentTrajet = new ArrayList<>();
+                    ArrayList<Couple> currentTrajet = new ArrayList<>();
+                    while (remplir<Q || curseur>=groupe.sesFournisseurs.size()){
+                        currentTrajet = new ArrayList<>();
                         avant= current_fournisseur.getQuantity(s);
                         while(current_fournisseur.getQuantity(s)>0){
-                            current_fournisseur.getQuantity(s)-=1;
+                            current_fournisseur.remove(s, 1);
                             remplir+=1;
                         }
                         apres = current_fournisseur.getQuantity(s);
                         if (apres-avant>0){
-                            currentTrajet.add(Couple(current_fournisseur,apres-avant))
+                            currentTrajet.add(new Couple(current_fournisseur,apres-avant));
                         }
                         curseur+=1;
-                        current_fournisseur=groupe.sesSuccesseurs.get(curseur);
+                        current_fournisseur=groupe.sesFournisseurs.get(curseur);
 
                     }
                     allTrajets.add(currentTrajet);
-                   
+
                 }
 
 
             }
-            trajet_par_semaine[s]=allTrajets;
+            trajet_par_semaine.set(s, allTrajets);
         }
-
-        System.out.println("x " + compteur + "f " + gens_sous_traite);
-        System.out.println("y " + nombre_de_tournees);
-        System.out.println("z " +  nombre_de_groupe);
 
         String mesFournisseurs= "";
 
         int nombre_de_tournees= 0;
 
         for(int s= 0; s<H;s++){
-            nombre_de_tournees+=trajet_par_semaine[s].length;
+            nombre_de_tournees+=trajet_par_semaine.get(s).size();
         }
+
+        System.out.println("x " + compteur + "f " + gens_sous_traite);
+        System.out.println("y " + nombre_de_tournees);
+        System.out.println("z " +  nombre_de_groupe);
+
         for(int s= 0; s<H;s++){ //chaque semaine
-            for(int k=0; k<trajet_par_semaine[s].length;k++){ // dans chaque all trajet
-                for (int t=0; t<trajet_par_semaine[s].get(k).length;t++){ // dans chaque trajet
-                    mesFournisseurs="";
-                    for(int e=0; e<trajet_par_semaine[s].get(k).get(t).length;e++){ //dans chaque étape
-                        mesFournisseurs+="f " +trajet_par_semaine[s].get(k).get(t).get(e).fournisseur.index + " " + trajet_par_semaine[s].get(k).get(t).get(e).quantiteprise +" ";
-                    }
+            for(int k=0; k<trajet_par_semaine.get(s).size();k++){ // dans chaque all trajet
+                mesFournisseurs="";
+                for (int t=0; t<trajet_par_semaine.get(s).get(k).size();t++){ // dans chaque trajet
+                        mesFournisseurs+="f " +trajet_par_semaine.get(s).get(k).get(t).fournisseur.index + " " + trajet_par_semaine.get(s).get(k).get(t).quantiteprise +" ";
                 }
 
             }
         }
 
-     }
+    }
 
     // pas de groupes, pas de sous traitance, un max de tournées
     public static void stupide() {
@@ -309,7 +319,7 @@ public class Main {
     static boolean[] visited = new boolean[N+1];
 
 
-   
+
 
 
     //Branch and bound algorithm
@@ -327,7 +337,7 @@ public class Main {
 
         int somme = 0;
         for (int i=0;i<final_path.length-1;i++){
-            somme+= math[final_path[i]][final_path[i+1]];
+            somme+= mat[final_path[i]][final_path[i+1]];
         }
         return new Couplee(final_path,somme);
     }
@@ -343,7 +353,7 @@ public class Main {
 
 
 
-    public static int firstMin(int i) {
+    public static int firstMin(int[][] mat, int i) {
         int mini = INT_MAX ;
         for(int k=0;k<N;k++){if (mat[i][k]<mini && i != k) {
                 mini = mat[i][k] ;
@@ -353,7 +363,7 @@ public class Main {
     }
 
 
-    public static int secondMin(int i) {
+    public static int secondMin(int[][] mat, int i) {
 
         int first = INT_MAX;
         int second = INT_MAX;
@@ -392,10 +402,10 @@ public class Main {
                 curr_weight += mat[curr_path[level-1]][i];
 
                 if (level==1) {
-                  curr_bound -= ((firstMin(curr_path[level-1]) + firstMin(i))/2);
+                  curr_bound -= ((firstMin(mat, curr_path[level-1]) + firstMin(mat, i))/2);
                 }
                 else {
-                  curr_bound -= ((secondMin(curr_path[level-1]) + firstMin(i))/2);
+                  curr_bound -= ((secondMin(mat, curr_path[level-1]) + firstMin(mat, i))/2);
                 }
 
                 if (curr_bound + curr_weight < final_res)  {
@@ -433,7 +443,7 @@ public class Main {
         }
 
         for(int i=0;i<N;i++){
-            curr_bound += (firstMin(i) + secondMin(i));
+            curr_bound += (firstMin(mat, i) + secondMin(mat, i));
         }
 
         curr_bound = curr_bound/2 + 1; //arrondir correctement
@@ -485,7 +495,7 @@ public class Main {
     		}
     		i++;
     		}
-    	
+
         return connexe;
     }
 }
