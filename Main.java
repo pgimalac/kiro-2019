@@ -11,7 +11,8 @@ public class Main {
         public final double gps1;
         public final double gps2;
         public final int[] voisins;
-        public boolean soustraite=false;
+        public boolean soustraite = false;
+        public int groupe = 0;
 
         public Sommet(int index, double gps1, double gps2) {
             this.index = index;
@@ -64,6 +65,7 @@ public class Main {
 
     static int Q, F, H;
     static Sommet[] fournisseurs;
+    static Sommet depot, usine;
 
     public static void main(String[] args) {
         String[] first = lines.next().split(" ");
@@ -74,12 +76,12 @@ public class Main {
         fournisseurs = new Sommet[F + 2];
 
         String[] second = lines.next().split(" ");
-        new Sommet(Integer.parseInt(second[1]),
+        depot = new Sommet(Integer.parseInt(second[1]),
                     Double.parseDouble(second[3]),
                     Double.parseDouble(second[4]));
 
         String[] third = lines.next().split(" ");
-        new Sommet(Integer.parseInt(third[1]),
+        usine = new Sommet(Integer.parseInt(third[1]),
                     Double.parseDouble(third[3]),
                     Double.parseDouble(third[4]));
 
@@ -94,43 +96,155 @@ public class Main {
         }
 
         //bnb();
-        stupide();
+        stupide3();
         //groupes();
 
 
-        int[] association = groupes();
-        ArrayList<Integer>[] mesGroupes = new ArrayList<>()[100];
+        // int[] association = groupes();
+        // ArrayList<Integer>[] mesGroupes = new ArrayList<>()[100];
 
-        for (int l=0;l<association.length;l++){
-            if(mesGroupes[association[i]]==null){
-                mesGroupes[association[i]] = new ArrayList<>();
+        // for (int l=0;l<association.length;l++){
+        //     if(mesGroupes[association[i]]==null){
+        //         mesGroupes[association[i]] = new ArrayList<>();
+        //     }
+        //     mesGroupes[association[i]].add(i);
+        // }
+
+        // for (ArrayList<Integer> groupe : mesGroupes) {
+        //     if(groupe!=null){
+        //         boolean soustraite=false;
+
+
+        //         int result = bnb(matrice_adjacence);
+        //         int coutfixe = 0;
+        //         for (int i =0;i<groupe.length;i++){
+        //             coutfixe+=fournisseurs[groupe.get(i)].getCout();
+        //         }
+        //         if (result >= coutfixe){
+        //             soustraite=true;
+        //         }
+
+        //     }
+        // }
+
+    }
+
+    public static void stupide3() {
+        int nb = 0;
+        for (Sommet s: fournisseurs){
+            if (s.isFournisseur()) {
+                int cost = 0;
+                for (int d = 0; d < H; d++){
+                    cost += (depot.voisins[s.index] + s.voisins[usine.index]) * ((s.getQuantity(d) + Q - 1) / Q);
+                }
+                if (s.getCout() <= cost) {
+                    s.soustraite = true;
+                    nb++;
+                }
             }
-            mesGroupes[association[i]].add(i);
         }
 
-        for (ArrayList<Integer> groupe : mesGroupes) {
-            if(groupe!=null){
-                boolean soustraite=false;
+        for (int i = 0; i < F; i++){
 
+        }
 
-                int result = bnb(matrice_adjacence);
-                int coutfixe = 0
-                for (int i =0;i<groupe.length;i++){
-                    coutfixe+=fournisseurs[groupe.get(i)].getCout();
+        System.out.print("x " + nb + " f");
+        for (Sommet s: fournisseurs) {
+            if (s.soustraite) {
+                System.out.print(" " + s.index);
+            }
+        }
+        System.out.println();
+
+        int tournees = 0;
+        for (Sommet f: fournisseurs) {
+            if (f.isFournisseur() && !f.soustraite) {
+                for (int d = 0; d < H; d++) {
+                    tournees += (f.getQuantity(d) + Q - 1) / Q;
                 }
-                if (result >= coutfixe){
-                    soustraite=true;
-                }
+            }
+        }
+        System.out.println("y " + tournees);
 
+        System.out.println("z " + ind);
+        for (int i = 0; i < F; i++){
+            if (!fournisseurs[i].soustraite){
+                System.out.println("C " + fournisseurs[i].groupe + " n " + 1 + " f " + i);
             }
         }
 
+        int id = 0;
+        for (Sommet f: fournisseurs) {
+            if (f.isFournisseur() && !f.soustraite) {
+                for (int d = 0; d < H; d++) {
+                    nb = f.getQuantity(d);
+                    while (nb > 0) {
+                        System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 1 f " + f.index + " " + Math.min(nb, Q));
+                       nb -= Q;
+                       id ++;
+                    }
+                }
+            }
+        }
+    }
 
+    public static void stupide2() {
+        int nb = 0;
+        int ind = 0;
+        for (Sommet s: fournisseurs){
+            if (s.isFournisseur()) {
+                int cost = 0;
+                for (int d = 0; d < H; d++){
+                    cost += (depot.voisins[s.index] + s.voisins[usine.index]) * ((s.getQuantity(d) + Q - 1) / Q);
+                }
+                if (s.getCout() <= cost) {
+                    s.soustraite = true;
+                    nb++;
+                } else {
+                    s.groupe = ind;
+                    ind ++;
+                }
+            }
+        }
 
+        System.out.print("x " + nb + " f");
+        for (Sommet s: fournisseurs) {
+            if (s.soustraite) {
+                System.out.print(" " + s.index);
+            }
+        }
+        System.out.println();
 
+        int tournees = 0;
+        for (Sommet f: fournisseurs) {
+            if (f.isFournisseur() && !f.soustraite) {
+                for (int d = 0; d < H; d++) {
+                    tournees += (f.getQuantity(d) + Q - 1) / Q;
+                }
+            }
+        }
+        System.out.println("y " + tournees);
 
+        System.out.println("z " + ind);
+        for (int i = 0; i < F; i++){
+            if (!fournisseurs[i].soustraite){
+                System.out.println("C " + fournisseurs[i].groupe + " n " + 1 + " f " + i);
+            }
+        }
 
-
+        int id = 0;
+        for (Sommet f: fournisseurs) {
+            if (f.isFournisseur() && !f.soustraite) {
+                for (int d = 0; d < H; d++) {
+                    nb = f.getQuantity(d);
+                    while (nb > 0) {
+                        System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 1 f " + f.index + " " + Math.min(nb, Q));
+                       nb -= Q;
+                       id ++;
+                    }
+                }
+            }
+        }
     }
 
     // pas de groupes, pas de sous traitance, un max de tournées
@@ -195,7 +309,7 @@ public class Main {
 
         int somme = 0;
         for (int i=0;i<final_path.length-1;i++){
-            somme+= Main.fournisseurs[final_path[i]].voisins[final_path[i+1]]
+            somme+= Main.fournisseurs[final_path[i]].voisins[final_path[i+1]];
         }
     }
 
@@ -352,7 +466,7 @@ public class Main {
     		}
     		i++;
     		}
-    	
+
         return connexe;
     }
 }
