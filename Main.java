@@ -116,7 +116,19 @@ public class Main {
             System.out.println("C " + i + " n " + 1 + " f " + i);
         }
 
-        System.out.println("");
+        int id = 0;
+        for (Sommet f: fournisseurs) {
+            if (f.isFournisseur()) {
+                for (int d = 0; d < H; d++) {
+                    int nb = f.getQuantity(d);
+                    while (nb > 0) {
+                        System.out.println("P " + id + " g " + f.index + " s " + d + " n 1 f " + f.index + " " + Math.min(nb, Q));
+                       nb -= Q;
+                       id ++;
+                    }
+                }
+            }
+        }
     }
 
 
