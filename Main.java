@@ -169,17 +169,21 @@ public class Main {
                         if (nb >= Q) {
                             System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 1 f " + f.index + " " + Q);
                         } else {
-                            boolean found = false;
-                            for (int j = f.index + 1; j < F; j++) {
-                                if (fournisseurs[j].groupe == f.groupe && fournisseurs[j].getQuantity(d) > 0) {
-                                    int qu = Math.min(Q - nb, fournisseurs[j].getQuantity(d));
-                                    System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 2 f " + f.index + " " + nb + " f " + j + " " + qu);
-                                    fournisseurs[j].remove(d, qu);
-                                    found = true;
-                                    break;
+                            Sommet closest = null;
+                            int dist = -1;
+                            for (Sommet s: grps.get(f.groupe)) {
+                                if (s != f && s.getQuantity(d) > 0) {
+                                    if (depot.voisins[s.index] > dist) {
+                                        dist = depot.voisins[s.index];
+                                        closest = s;
+                                    }
                                 }
                             }
-                            if (!found) {
+                            if (closest != null) {
+                                int qu = Math.min(Q - nb, closest.getQuantity(d));
+                                System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 2 f " + f.index + " " + nb + " f " + closest.index + " " + qu);
+                                closest.remove(d, qu);
+                            } else {
                                 System.out.println("P " + id + " g " + f.groupe + " s " + d + " n 1 f " + f.index + " " + nb);
                             }
                         }
